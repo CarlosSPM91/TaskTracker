@@ -9,9 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class TaskManager {
-    private ArrayList<Task> tasks;
+    private final ArrayList<Task> tasks;
     private final Path F_PATH = Path.of("tasks.json");
 
     public TaskManager() {
@@ -24,15 +26,15 @@ public class TaskManager {
     }
 
     public void markTodo(int id) {
-        tasks.get(id).setStat(Status.TODO);
+        tasks.get(id-1).setStat(Status.TODO);
     }
 
     public void markInProgres(int id) {
-        tasks.get(id).setStat(Status.INPROGES);
+        tasks.get(id-1).setStat(Status.INPROGES);
     }
 
     public void markDone(int id) {
-        tasks.get(id).setStat(Status.DONE);
+        tasks.get(id-1).setStat(Status.DONE);
     }
 
     public void add(String description) {
@@ -40,14 +42,12 @@ public class TaskManager {
     }
 
     public void update(int id, String description) {
-        int idUp = id + 1;
-        tasks.get(id).setDescription(description);
-        tasks.get(id).setUpdateDate(LocalDateTime.now());
+        tasks.get(id-1).setDescription(description);
+        tasks.get(id-1).setUpdateDate(LocalDateTime.now());
     }
 
     public void delete(int id) {
-        int idDel = id - 1;
-        tasks.removeIf(taskID -> taskID.getId() == idDel);
+        tasks.remove(id-1);
     }
 
     public void list(String stat) {
@@ -55,38 +55,63 @@ public class TaskManager {
             case "todo":
                 for (Task t : tasks) {
                     if (t.getStat().equals(Status.TODO)) {
-                        t.toString();
-                        System.lineSeparator();
+                        System.out.println(t.toString());
+                        System.out.println();
                     }
                 }
                 break;
             case "in-progress":
                 for (Task t : tasks) {
                     if (t.getStat().equals(Status.INPROGES)) {
-                        t.toString();
-                        System.lineSeparator();
+                        System.out.println(t.toString());
+                        System.out.println();
                     }
                 }
                 break;
             case "done":
                 for (Task t : tasks) {
                     if (t.getStat().equals(Status.DONE)) {
-                        t.toString();
-                        System.lineSeparator();
+                        System.out.println(t.toString());
+                        System.out.println();
                     }
                 }
                 break;
-            default:
+            case "":
                 for (Task t : tasks) {
-                    t.toString();
-                    System.lineSeparator();
+                    System.out.println(t.toString());
+                    System.out.println();
                 }
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + stat);
         }
     }
 
+
+    public String toJason(Task task) {
+        return String.format(
+                "{\"Id\":\"%d\", \"Status\":\"%s\", \"Description\":\"%s\", \"CreationDate\":\"%s\", \"UpdateDate\":\"%s\"}",
+                task.getId(),
+                task.getStat(),
+                task.getDescription(),
+                task.getCreationDate(),
+                task.getUpdateDate() != null ? task.getUpdateDate() : task.getCreationDate()
+        );
+    }
+
+    public Task fromJason(String line) {
+        Task jasonTask= new Task();
+        String[] task = line.split(",");
+        jasonTask.setId(Integer.parseInt(task[0].substring(task[0].indexOf(":") + 2,task[0].length()-1).trim()));
+        jasonTask.setStat(Status.chooseStat(task[1].substring(task[1].indexOf(":") + 2, task[1].length()-1).trim()));
+        jasonTask.setDescription(task[2].substring(task[2].indexOf(":") + 2, task[2].length()-1).trim());
+        jasonTask.setCreationDate(LocalDateTime.parse(task[3].substring(task[3].indexOf(":") + 2,task[3].length()-1).trim()));
+        jasonTask.setUpdateDate(LocalDateTime.parse(task[4].substring(task[4].indexOf(":") + 2,task[4].length()-2).trim()));
+        return jasonTask;
+    }
+
     public void writeJSON() {
-        StringBuilder sb = new StringBuilder("[");
+        StringBuilder sb = new StringBuilder();
         int size = tasks.size();
         int count = 0;
         if (!Files.exists(F_PATH)) {
@@ -96,17 +121,13 @@ public class TaskManager {
                 throw new RuntimeException("Can't create JSON file", e);
             }
         }
+        sb.append("[");
+        while (count<tasks.size()){
+            if (count != 0) sb.append(",");
 
-        for (Task t : tasks) {
-            sb.append("{").append("\"ID:\"").append("\"").append(String.valueOf(t.getId())).append("\"").append(",")
-                    .append("\"Status:\"").append("\"").append(String.valueOf(t.getStat())).append("\"").append(",")
-                    .append("\"Description:\"").append("\"").append(t.getDescription()).append("\"").append(",")
-                    .append("\"CreationDate:\"").append("\"").append(String.valueOf(t.getCreationDate())).append("\"").append(",")
-                    .append("\"UpdateDate:\"").append("\"").append(String.valueOf(t.getUpdateDate())).append("\"").append("}");
-            if (count == size - 1) {
-                sb.append(",");
-            }
+            sb.append(toJason(getTasks().get(count)));
             count++;
+
         }
         sb.append("]");
         try {
@@ -133,21 +154,8 @@ public class TaskManager {
             if (!jsonContent.isEmpty()) {
                 String[] jasonTasks = jsonContent.split("},");
 
-                for (int i = 0; i < jasonTasks.length; i++) {
-                    String[] task = jasonTasks[i].split(",");
-
-                    //saving parameters
-                    // id in position 0, Status in position 1, Description position 2, creation Date position 3 and Update date position 4
-                    int id = Integer.parseInt(task[0]);
-                    Status stat = Status.chooseStat(task[1]);
-                    String description = task[2];
-                    LocalDateTime creationDate = LocalDateTime.parse(task[3]);
-                    LocalDateTime updateDate = LocalDateTime.parse(task[4]);
-                    //creating task
-                    Task taskfromJson = new Task(id, stat, description, creationDate, updateDate);
-                    //Adding task
-                    tasksFromJson.add(taskfromJson);
-                }
+                //Adding task
+                return tasksFromJson = Arrays.stream(jasonTasks).map(this::fromJason).collect(Collectors.toCollection(ArrayList::new));
             }
         } catch (IOException e) {
             throw new RuntimeException("Can't write JSON file", e);

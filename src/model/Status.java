@@ -14,7 +14,9 @@ public enum Status {
                 return Status.INPROGES;
             case "DONE":
                 return Status.DONE;
+            default:
+                throw new IllegalStateException("Unexpected value: " + stat);
         }
-        return null;
+
     }
 }
