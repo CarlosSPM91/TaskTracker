@@ -7,15 +7,17 @@ public enum Status {
 
     public static Status chooseStat(String stat){
 
-        switch (stat){
-            case "TODO":
+        switch (stat) {
+            case "TODO" -> {
                 return Status.TODO;
-            case "INPROGES":
+            }
+            case "INPROGES" -> {
                 return Status.INPROGES;
-            case "DONE":
+            }
+            case "DONE" -> {
                 return Status.DONE;
-            default:
-                throw new IllegalStateException("Unexpected value: " + stat);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + stat);
         }
 
     }

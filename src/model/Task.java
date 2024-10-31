@@ -1,10 +1,7 @@
 package model;
 
-import java.text.DateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 
 public class Task {
     private static int idCount=1;
@@ -24,15 +21,6 @@ public class Task {
         this.description=description;
         this.creationDate= LocalDateTime.now();
         idCount++;
-    }
-
-    public Task(int id, Status stat, String description, LocalDateTime creationDate, LocalDateTime updateDate) {
-        this.id = id;
-        this.stat = stat;
-        this.description = description;
-        this.creationDate = creationDate;
-        this.updateDate = updateDate;
-
     }
 
     public void setId(int id) {
@@ -74,13 +62,6 @@ public class Task {
         return id;
     }
 
-
-    public String toJason() {
-        return "{"+ "Id:" + String.valueOf(this.id)+" Status:" + String.valueOf(this.stat) +
-                "Description:" + this.description +
-                "Creation Date:" + String.valueOf(this.creationDate.format(format)) +
-                "Update Date:" + String.valueOf(this.updateDate.format(format)) +"}";
-    }
     @Override
     public String toString() {
         return "Id: " + this.id+" Status: " + this.stat +

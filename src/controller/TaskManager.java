@@ -55,7 +55,7 @@ public class TaskManager {
             case "todo":
                 for (Task t : tasks) {
                     if (t.getStat().equals(Status.TODO)) {
-                        System.out.println(t.toString());
+                        System.out.println(t);
                         System.out.println();
                     }
                 }
@@ -63,7 +63,7 @@ public class TaskManager {
             case "in-progress":
                 for (Task t : tasks) {
                     if (t.getStat().equals(Status.INPROGES)) {
-                        System.out.println(t.toString());
+                        System.out.println(t);
                         System.out.println();
                     }
                 }
@@ -71,7 +71,7 @@ public class TaskManager {
             case "done":
                 for (Task t : tasks) {
                     if (t.getStat().equals(Status.DONE)) {
-                        System.out.println(t.toString());
+                        System.out.println(t);
                         System.out.println();
                     }
                 }
@@ -112,7 +112,6 @@ public class TaskManager {
 
     public void writeJSON() {
         StringBuilder sb = new StringBuilder();
-        int size = tasks.size();
         int count = 0;
         if (!Files.exists(F_PATH)) {
             try {
@@ -155,7 +154,7 @@ public class TaskManager {
                 String[] jasonTasks = jsonContent.split("},");
 
                 //Adding task
-                return tasksFromJson = Arrays.stream(jasonTasks).map(this::fromJason).collect(Collectors.toCollection(ArrayList::new));
+                tasksFromJson = Arrays.stream(jasonTasks).map(this::fromJason).collect(Collectors.toCollection(ArrayList::new));
             }
         } catch (IOException e) {
             throw new RuntimeException("Can't write JSON file", e);
