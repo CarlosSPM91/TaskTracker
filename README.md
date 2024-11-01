@@ -41,7 +41,7 @@ List all tasks or filter them by status.
 
 **Clone the repository:**
  ```bash
-git clone git@github.com:CarlosSPM91/TaskTracker.git
+git clone https://github.com/CarlosSPM91/TaskTracker.git
 cd TaskTracker
 ```
  **Change directory to:**
