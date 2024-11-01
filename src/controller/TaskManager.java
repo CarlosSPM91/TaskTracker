@@ -2,8 +2,7 @@ package controller;
 
 import model.Status;
 import model.Task;
-
-
+import model.TaskManagerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,34 +19,61 @@ public class TaskManager {
         this.tasks = loadJSON();
     }
 
-
     public ArrayList<Task> getTasks() {
         return tasks;
     }
 
-    public void markTodo(int id) {
-        tasks.get(id-1).setStat(Status.TODO);
+    public void markTodo(int id) throws TaskManagerException {
+        int pos= selectId(id);
+        if (pos==-1) {
+            throw new TaskManagerException("No existing ID");
+        }else {
+            tasks.get(pos).setStat(Status.TODO);
+        }
     }
 
-    public void markInProgres(int id) {
-        tasks.get(id-1).setStat(Status.INPROGES);
+    public void markInProgres(int id) throws TaskManagerException {
+        int pos = selectId(id);
+        if (pos == -1) {
+            throw new TaskManagerException("No existing ID");
+        } else{
+            tasks.get(pos).setStat(Status.INPROGES);
+        }
     }
 
-    public void markDone(int id) {
-        tasks.get(id-1).setStat(Status.DONE);
+    public void markDone(int id) throws TaskManagerException {
+        int pos = selectId(id);
+        if (pos == -1) {
+            throw new TaskManagerException("No existing ID");
+        }else{
+            tasks.get(pos).setStat(Status.DONE);
+        }
     }
 
     public void add(String description) {
         tasks.add(new Task(description));
+        System.out.println("Task added");
     }
 
-    public void update(int id, String description) {
-        tasks.get(id-1).setDescription(description);
-        tasks.get(id-1).setUpdateDate(LocalDateTime.now());
+    public void update(int id, String description) throws TaskManagerException {
+       int pos= selectId(id);
+       if (pos==-1) {
+           throw new TaskManagerException("No existing ID");
+       }else {
+           tasks.get(pos).setDescription(description);
+           tasks.get(pos).setUpdateDate(LocalDateTime.now());
+           System.out.println("Task with id " + id + " updated");
+       }
     }
 
-    public void delete(int id) {
-        tasks.remove(id-1);
+    public void delete(int id) throws TaskManagerException {
+        int pos= selectId(id);
+        if (pos==-1) {
+            throw new TaskManagerException("No existing ID");
+        }else {
+            tasks.remove(pos);
+            System.out.println("Task with id " + id + " removed");
+        }
     }
 
     public void list(String stat) {
@@ -76,17 +102,14 @@ public class TaskManager {
                     }
                 }
                 break;
-            case "":
+            default:
                 for (Task t : tasks) {
                     System.out.println(t.toString());
                     System.out.println();
                 }
                 break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + stat);
         }
     }
-
 
     public String toJason(Task task) {
         return String.format(
@@ -146,9 +169,8 @@ public class TaskManager {
         try {
             String jsonContent = Files.readString(F_PATH);
 
-            if (jsonContent.startsWith("[") && jsonContent.endsWith("]")) {
+            if (jsonContent.startsWith("[") && jsonContent.endsWith("]"))
                 jsonContent = jsonContent.substring(1, jsonContent.length() - 1).trim();
-            }
 
             if (!jsonContent.isEmpty()) {
                 String[] jasonTasks = jsonContent.split("},");
@@ -162,5 +184,12 @@ public class TaskManager {
 
         return tasksFromJson;
     }
-
+    private int selectId(int id){
+        int pos=0;
+        for (Task t: tasks){
+            if (t.getId()==id) return pos;
+            pos++;
+        }
+        return -1;
+    }
 }

@@ -3,7 +3,7 @@ package model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Task {
+public class Task{
     private static int idCount=1;
     private int id;
     private Status stat;
@@ -69,4 +69,5 @@ public class Task {
                 System.lineSeparator()+"Creation Date: " + this.creationDate.format(format) +
                 System.lineSeparator()+"Update Date: " + this.updateDate.format(format);
     }
+
 }
